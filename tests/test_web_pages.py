@@ -3,6 +3,8 @@ import unittest
 from unittest.mock import patch
 from pathlib import Path
 
+from werkzeug.security import generate_password_hash
+
 os.environ.setdefault("PASS", "test-password")
 
 import app as app_package
@@ -33,6 +35,9 @@ class DummySmtp:
 
 
 class TestWebPages(unittest.TestCase):
+    TEST_EMAIL = "user@example.com"
+    TEST_PASSWORD = "password123"
+
     @classmethod
     def setUpClass(cls):
         cls.repo_root = str(Path(__file__).resolve().parents[1])
@@ -48,8 +53,8 @@ class TestWebPages(unittest.TestCase):
 
         with cls.app.app_context():
             db.create_all()
-            user = User(email="user@example.com")
-            user.password = "not-a-real-hash"
+            user = User(email=cls.TEST_EMAIL)
+            user.password = generate_password_hash(cls.TEST_PASSWORD, method="sha256")
             db.session.add(user)
             db.session.add(
                 Connection(
@@ -70,12 +75,11 @@ class TestWebPages(unittest.TestCase):
     def setUp(self):
         self.client = self.app.test_client()
 
-    def login(self):
-        with patch("app.auth.check_password_hash", return_value=True):
-            response = self.client.post(
-                "/login",
-                data={"email": "user@example.com", "password": "password123"},
-            )
+    def perform_login(self):
+        response = self.client.post(
+            "/login",
+            data={"email": self.TEST_EMAIL, "password": self.TEST_PASSWORD},
+        )
         self.assertEqual(response.status_code, 302)
 
     def test_login_page(self):
@@ -89,27 +93,27 @@ class TestWebPages(unittest.TestCase):
         self.assertIn("/login", response.location)
 
     def test_home_page(self):
-        self.login()
+        self.perform_login()
         with patch("app.pages.use_imap", return_value=DummyImap()):
             response = self.client.get("/home")
         self.assertEqual(response.status_code, 302)
         self.assertIn("folder=INBOX", response.location)
 
     def test_send_page(self):
-        self.login()
+        self.perform_login()
         with patch("app.pages.smtplib.SMTP", return_value=DummySmtp()):
             response = self.client.get("/send")
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"Send Message", response.data)
 
     def test_settings_page(self):
-        self.login()
+        self.perform_login()
         response = self.client.get("/settings?page=general")
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"General Settings", response.data)
 
     def test_reload_page(self):
-        self.login()
+        self.perform_login()
         response = self.client.get("/reload")
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"Reloading", response.data)
