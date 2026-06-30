@@ -1,6 +1,7 @@
 import os
 import unittest
 from unittest.mock import patch
+from pathlib import Path
 
 os.environ.setdefault("PASS", "test-password")
 
@@ -34,7 +35,7 @@ class DummySmtp:
 class TestWebPages(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.repo_root = "/home/runner/work/webmail/webmail"
+        cls.repo_root = str(Path(__file__).resolve().parents[1])
         cls.test_db_name = "test_database.db"
         cls.test_db_path = os.path.join(cls.repo_root, "app", cls.test_db_name)
 
@@ -48,7 +49,7 @@ class TestWebPages(unittest.TestCase):
         with cls.app.app_context():
             db.create_all()
             user = User(email="user@example.com")
-            setattr(user, "pass" + "word", "not-a-real-hash")
+            user.password = "not-a-real-hash"
             db.session.add(user)
             db.session.add(
                 Connection(
