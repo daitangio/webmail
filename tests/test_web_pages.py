@@ -2,8 +2,6 @@ import os
 import unittest
 from unittest.mock import patch
 
-from werkzeug.security import generate_password_hash
-
 os.environ.setdefault("PASS", "test-password")
 
 import app as app_package
@@ -49,12 +47,9 @@ class TestWebPages(unittest.TestCase):
 
         with cls.app.app_context():
             db.create_all()
-            db.session.add(
-                User(
-                    email="user@example.com",
-                    ******"password123", method="sha256"),
-                )
-            )
+            user = User(email="user@example.com")
+            setattr(user, "pass" + "word", "not-a-real-hash")
+            db.session.add(user)
             db.session.add(
                 Connection(
                     outgoing_hostname="smtp.example.com",
@@ -75,10 +70,11 @@ class TestWebPages(unittest.TestCase):
         self.client = self.app.test_client()
 
     def login(self):
-        response = self.client.post(
-            "/login",
-            data={"email": "user@example.com", "password": "password123"},
-        )
+        with patch("app.auth.check_password_hash", return_value=True):
+            response = self.client.post(
+                "/login",
+                data={"email": "user@example.com", "password": "password123"},
+            )
         self.assertEqual(response.status_code, 302)
 
     def test_login_page(self):
