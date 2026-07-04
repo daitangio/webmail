@@ -467,6 +467,7 @@ def trash():
 			flash("IMAP Authentication Failed", category='error')
 			flash("Please correct your Email settings.", category='success')
 			full_url = url_for('.settings', page="user")
+			return redirect(full_url)
 		if imap == "Connection Failed":
 			flash("IMAP Connection Failure", category='error')
 			flash("Please double check your settings.", category='success')
@@ -489,7 +490,7 @@ def trash():
 			return redirect(full_url)
 		else:
 			flash("Error!", category='error')
-			full_url = url_for('.home', folder=folders)
+			full_url = url_for('.home', folder=folder)
 			imap.close()
 			imap.logout()
 			return redirect(full_url)
@@ -523,6 +524,7 @@ def msg_move():
 			flash("IMAP Authentication Failed", category='error')
 			flash("Please correct your Email settings.", category='success')
 			full_url = url_for('.settings', page="user")
+			return redirect(full_url)
 		if imap == "Connection Failed":
 			flash("IMAP Connection Failure", category='error')
 			flash("Please double check your settings.", category='success')
@@ -569,6 +571,7 @@ def status():
 			flash("IMAP Authentication Failed", category='error')
 			flash("Please correct your Email settings.", category='success')
 			full_url = url_for('.settings', page="user")
+			return redirect(full_url)
 		if imap == "Connection Failed":
 			flash("IMAP Connection Failure", category='error')
 			flash("Please double check your settings.", category='success')

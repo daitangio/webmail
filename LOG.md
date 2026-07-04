@@ -51,6 +51,20 @@
 
 ---
 
+### Fix: Missing `return redirect` in IMAP Auth Failed error paths
+
+**Problem:** In `trash()`, `msg_move()`, and `status()` routes, when `use_imap()` returned `"Auth Failed"`, the code set `full_url` but never returned the redirect. Execution fell through to the next IMAP operation, using the string `"Auth Failed"` as an IMAP connection object — causing a crash.
+
+**Routes fixed:**
+- `trash()` (line 466)
+- `msg_move()` (line 523)
+- `status()` (line 570)
+
+**Changes in `app/pages.py`:**
+- Added `return redirect(full_url)` after setting the redirect URL in each `"Auth Failed"` block, matching the pattern already present in `home()` and `send()`.
+
+---
+
 ### Fix: Sidebar/content overlap in home.html
 
 **Problem:** Long folder names (e.g. `INBOX.Sent.Personal.Family.2024`) stretched the sidebar table beyond `col-xl-3`, pushing into the message content area. Also `col-xl-*` only works at ≥1200px — below that both columns were full-width in the same flex row, causing overlap.
@@ -72,8 +86,9 @@ Long folder names are now truncated with ellipsis instead of overflowing the gri
 
 - [x] Project scanned and documented
 - [x] Fixed sidebar/content overlap in home.html
+- [x] Fixed missing `return redirect(full_url)` in error paths (trash, msg_move, status)
 - [ ] Write and run tests
-- [ ] Fix known bugs (imap_port ignored, `folders` typo, PASS refresh)
+- [ ] Fix known bugs (imap_port ignored, PASS refresh)
 - [ ] Rich message viewing (HTML, attachments)
 - [ ] Multi-user support
 - [ ] Logging system
