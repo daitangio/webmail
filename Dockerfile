@@ -3,7 +3,8 @@ FROM python:3.14-slim-trixie
 ENV PATH="$PATH:/home/app/.local/bin"
 
 RUN pip install --upgrade pip
-RUN python -m venv .venv
+#RUN python -m venv .venv
+
 # Ensure basic pi.dev is installed
 RUN apt update && apt install -y git curl xz-utils
 RUN mkdir -p /root/.local/share/pi-node
@@ -28,7 +29,12 @@ ENV PI_TELEMETRY=no
 ENV PI_CODING_AGENT_DIR=/workspaces/webmail/var/pi-agent
 # Ensure Sessions are not lost and keep them in a separate directory instead of under pi-agent
 ENV PI_CODING_AGENT_SESSION_DIR=/workspaces/webmail/var/pi-sessions/
-RUN pi --version
+
+# Install crafted pi-extensions
+WORKDIR /workspaces/pi-extensions
+RUN npm install mitsupi
+RUN pi install node_modules/mitsupi
+RUN pi list
 
 
 # Ensure gh is installed (optioanl but can be userful)

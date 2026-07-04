@@ -18,3 +18,4 @@ var/pi-agent/bin/*
 var/pi-agent/settings.json
 var/pi-agent/models.json
 doc/*.html
+node_modules

@@ -1,0 +1,32 @@
+[project]
+name = "atman-mail"
+version = "0.1.0"
+description = "Ātman E-Mail Client - a web-based email client built with Flask"
+authors = [
+  { name="Giovanni Giorgi", email="jj@gioorgi.com" },
+  { name="John L Radford"}
+]
+
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "Flask>=2.1",
+    "Flask-SQLAlchemy>=2.5",
+    "SQLAlchemy>=1.4",
+    "Flask-Login>=0.6",
+    "Werkzeug>=2.1",
+    "python-dotenv>=0.20",
+]
+
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project.optional-dependencies] # Optional
+dev = [
+    "black>=26.5.1",
+    "pylint>=4.0.6",
+]
+
+[tool.setuptools]
+packages = ["app"]
