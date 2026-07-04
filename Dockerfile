@@ -16,9 +16,6 @@ RUN curl -fsSL https://nodejs.org/dist/latest-v22.x/node-v22.23.1-linux-arm64.ta
 ENV PATH="/root/.local/share/pi-node/node-v22.23.1-linux-arm64/bin:${PATH}"
 RUN npm install -g --ignore-scripts @earendil-works/pi-coding-agent
 
-RUN mkdir -p /root/.pi/agent/
-COPY etc/pi/models.json /root/.pi/agent/models.json
-
 # Install the RTK command to reduce token usage
 COPY ./etc/rtk-installer.sh /tmp/
 RUN /tmp/rtk-installer.sh 
@@ -26,21 +23,22 @@ ENV PATH="/root/.local/bin:${PATH}"
 
 # Important to avoid malfunction: define the DEEPSEEK_API_KEY
 # API Key is provided by https://platform.deepseek.com/
-
+ENV PI_TELEMETRY=no
+# PI_CODING_AGENT_DIR	Override config directory; default is ~/.pi/agent
+ENV PI_CODING_AGENT_DIR=/workspaces/webmail/var/pi-agent
+# Ensure Sessions are not lost and keep them in a separate directory instead of under pi-agent
+ENV PI_CODING_AGENT_SESSION_DIR=/workspaces/webmail/var/pi-sessions/
 RUN pi --version
 
 
 # Ensure gh is installed (optioanl but can be userful)
-RUN (type -p wget >/dev/null || (apt update && apt install wget -y)) \
-	&& mkdir -p -m 755 /etc/apt/keyrings \
-	&& out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg \
-	&& cat $out | tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
-	&& chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
-	&& mkdir -p -m 755 /etc/apt/sources.list.d \
-	&& echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
-	&& apt update \
-	&& apt install gh -y
+# RUN (type -p wget >/dev/null || (apt update && apt install wget -y)) \
+# 	&& mkdir -p -m 755 /etc/apt/keyrings \
+# 	&& out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+# 	&& cat $out | tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
+# 	&& chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+# 	&& mkdir -p -m 755 /etc/apt/sources.list.d \
+# 	&& echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+# 	&& apt update \
+# 	&& apt install gh -y
 
-# RUN addgroup --gid 1000  app && adduser --uid 1000 --ingroup app  app
-# USER app
-# WORKDIR /home/app
