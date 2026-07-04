@@ -8,3 +8,5 @@ Ensure you have everything you need with
     python -m venv .venv
     . .venv/bin/activate
     pip install -e ".[dev]"    
+
+python3 -m pytest tests/test_delete.py
