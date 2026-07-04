@@ -1,5 +1,9 @@
 # Ātman E-Mail Client
 
+Forked from https://github.com/BlueSquare23/Atman_Mail and supecharged with DeepSeek.
+Kept same license.
+See LOG.md for current tstatus and modifications.
+
 ## Overview 
 
 This project is a web-based Email client written in Python using the Flask web

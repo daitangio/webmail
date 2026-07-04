@@ -450,52 +450,44 @@ def settings():
 
 ######### Delete Page #########
 
-@pages.route("/delete", methods=['POST'])
+@pages.route("/delete", methods=['GET'])
 @login_required
 def trash():
 	gen_settings = Settings.query.first()
 
-	msg_num = request.form.get("msg_num")
-	folder = request.form.get("folder")
+	msg_num = request.args.get("msg_num")
+	folder = request.args.get("folder")
+	page_num = request.args.get("page_num", type=int)
 
-	if bool(msg_num) != True or bool(folder) != True:
-		full_url = url_for('.home')
-		return redirect(full_url)
+	if not msg_num or not folder:
+		return redirect(url_for('.home'))
+
+	imap = use_imap()
+	if imap == "Auth Failed":
+		flash("IMAP Authentication Failed", category='error')
+		flash("Please correct your Email settings.", category='success')
+		return redirect(url_for('.settings', page="user"))
+	if imap == "Connection Failed":
+		flash("IMAP Connection Failure", category='error')
+		flash("Please double check your settings.", category='success')
+		return redirect(url_for('.settings', page="connection"))
+
+	response = move_msg_to_trash(imap, msg_num, folder, del_pref=gen_settings.del_button_behavior)
+
+	if response == "Trashed":
+		flash("Message moved to Trash!", category='success')
+	elif response == "Deleted":
+		flash("Message Permanently Deleted!", category='success')
 	else:
-		imap = use_imap()
-		if imap == "Auth Failed":
-			flash("IMAP Authentication Failed", category='error')
-			flash("Please correct your Email settings.", category='success')
-			full_url = url_for('.settings', page="user")
-			return redirect(full_url)
-		if imap == "Connection Failed":
-			flash("IMAP Connection Failure", category='error')
-			flash("Please double check your settings.", category='success')
-			full_url = url_for('.settings', page="connection")
-			return redirect(full_url)
+		flash("Error!", category='error')
 
-		response = move_msg_to_trash(imap, msg_num, folder, del_pref=gen_settings.del_button_behavior)
+	imap.close()
+	imap.logout()
 
-		if response == "Trashed":
-			flash("Message moved to Trash!", category='success')
-			full_url = url_for('.home', folder=folder)
-			imap.close()
-			imap.logout()
-			return redirect(full_url)
-		elif response == "Deleted":
-			flash("Message Permanently Deleted!", category='success')
-			full_url = url_for('.home', folder=folder)
-			imap.close()
-			imap.logout()
-			return redirect(full_url)
-		else:
-			flash("Error!", category='error')
-			full_url = url_for('.home', folder=folder)
-			imap.close()
-			imap.logout()
-			return redirect(full_url)
-		imap.close()
-		imap.logout()
+	# Only include page_num in redirect if it's a valid positive int
+	if page_num and page_num > 0:
+		return redirect(url_for('.home', folder=folder, page_num=page_num))
+	return redirect(url_for('.home', folder=folder))
 
 
 

@@ -9,9 +9,11 @@
 - Test your code before declaring done.
 - No sycophantic openers or closing fluff.
 - Keep solutions simple and direct.
+- The overall project aims to be very compact (*less is more* mantra)
+- Always ignore the var/ folder: notthing interesting is there.
 
 - At the end of LOG.md, create a work in progress log, where you note what you already did, what is missing. Always update LOG.md
-- The overall project aims to be very compact (*less is more* mantra)
+
 
 # RTK - Rust Token Killer (Codex CLI)
 
@@ -47,4 +49,4 @@ which rtk
 ```
 
 
-Refer to PROJECT_REFERENCE.md if you need more details
+Refer to CONTRIBUTING.md if you need more details

@@ -46,7 +46,6 @@
 - Folder listing may crash on some IMAP servers (the `.split('"')[-1]` approach is fragile)
 - `get_msg_body_string()` doesn't fall back nicely if content is not text/plain
 - Settings page renders only the requested page tab but passes all variables regardless
-- `trash()` route references undefined `folders` variable in error path
 - JS polling URL in home.html hardcodes the folder from request args without URL encoding
 
 ---
@@ -87,6 +86,7 @@ Long folder names are now truncated with ellipsis instead of overflowing the gri
 - [x] Project scanned and documented
 - [x] Fixed sidebar/content overlap in home.html
 - [x] Fixed missing `return redirect(full_url)` in error paths (trash, msg_move, status)
+- [x] Fixed message deletion: flexible trash folder detection, fallback to permanent delete, None-safe IMAP responses
 - [ ] Write and run tests
 - [ ] Fix known bugs (imap_port ignored, PASS refresh)
 - [ ] Rich message viewing (HTML, attachments)

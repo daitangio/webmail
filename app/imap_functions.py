@@ -2,76 +2,116 @@ import ssl
 from email.message import EmailMessage
 import email
 
-def check_for_trash_folder(imap):
+def find_trash_folder(imap):
+	"""Find the trash folder on the IMAP server.
+	Returns the folder name if found, None otherwise.
+	"""
 	resp_code, directories = imap.list()
-
 	print("IMAP List Response Code : {}".format(resp_code))
 
-	for directory in directories:
-		print(directory.decode('utf-8'))
-		directory_name = directory.decode().split('"')[-1].strip()
-		if directory_name == "INBOX.Trash":
-			print("Has Trash Folder!")
-			return True
+	trash_candidates = ["trash", "bin", "deleted", "papierkorb", "cestino", "corbeille"]
 
-	return False
+	for directory in directories:
+		decoded = directory.decode('utf-8')
+		print(decoded)
+		# Folder name is usually after the last quoted separator or at the end.
+		# Try parsing with quotes first, then fall back to splitting by separator.
+		if '"' in decoded:
+			directory_name = decoded.split('"')[-1].strip()
+		else:
+			# No quotes: format likely "(\\HasNoChildren) \".\" INBOX"
+			parts = decoded.rsplit(" ", 1)
+			directory_name = parts[-1].strip() if len(parts) > 1 else decoded.strip()
+
+		# Case-insensitive check against trash candidates
+		for candidate in trash_candidates:
+			if candidate in directory_name.lower():
+				print("Has Trash Folder: {}".format(directory_name))
+				return directory_name
+
+	return None
 
 def delete_msg(imap, msg_num):
-		resp_code, response = imap.store(str(msg_num), '+FLAGS', '\\Deleted')
-		print("Response Code : {}".format(resp_code))
+	resp_code, response = imap.store(str(msg_num), '+FLAGS', '\\Deleted')
+	print("Response Code : {}".format(resp_code))
+	if response and response[0] is not None:
 		print("Response      : {}\n".format(response[0].decode()))
 
-		resp_code, response = imap.expunge()
-		print("Response Code : {}".format(resp_code))
+	resp_code, response = imap.expunge()
+	print("Response Code : {}".format(resp_code))
+	if response and response[0] is not None:
 		print("Response      : {}\n".format(response[0].decode()))
 
 def move_msg(imap, msg_num, src_folder, dst_folder):
-
 	imap.select(mailbox=src_folder, readonly=False)
 
 	try:
 		# Copy Message to dst_folder
 		resp_code, response = imap.copy(str(msg_num), dst_folder)
 		print("Response Code : {}".format(resp_code))
-		print("Response      : {}".format(response[0].decode()))
+		if response and response[0] is not None:
+			print("Response      : {}".format(response[0].decode()))
 
 		# Delete Message from src_folder
 		resp_code, response = imap.store(str(msg_num), '+FLAGS', '\\Deleted')
 		print("Response Code : {}".format(resp_code))
-		print("Response      : {}\n".format(response[0].decode()))
+		if response and response[0] is not None:
+			print("Response      : {}\n".format(response[0].decode()))
 
 		# Expunge src_folder
 		resp_code, response = imap.expunge()
 		print("Response Code : {}".format(resp_code))
-		print("Response      : {}\n".format(response[0].decode()))
+		if response and response[0] is not None:
+			print("Response      : {}\n".format(response[0].decode()))
 
 		return True
 
-	except:
+	except Exception as e:
+		print("move_msg failed: {}".format(e))
 		return False
 	
 
 def move_msg_to_trash(imap, msg_num, folder, del_pref):
-	if check_for_trash_folder(imap) == True:
+	trash_folder = find_trash_folder(imap)
 
-		imap.select(mailbox=folder, readonly=False)
+	imap.select(mailbox=folder, readonly=False)
 
-		# Delete message if already in trash.
-		if folder == "INBOX.Trash" or folder == "INBOX.Drafts" or del_pref == "delete":
+	def _delete_safe(imap, msg_num):
+		try:
 			delete_msg(imap, msg_num)
-			return "Deleted"
-		# Otherwise move message to the trash and then delete from current
-		# folder.
-		else:
-			resp_code, response = imap.copy(str(msg_num), "INBOX.Trash")
+			return True
+		except Exception as e:
+			print("Delete failed: {}".format(e))
+			return False
+
+	# If explicitly set to permanent delete, or already in trash, delete directly
+	if del_pref == "delete":
+		_delete_safe(imap, msg_num)
+		return "Deleted"
+
+	# If we're already in a trash-like folder or drafts, delete directly
+	if trash_folder is not None and (folder == trash_folder or folder == "INBOX.Drafts"):
+		_delete_safe(imap, msg_num)
+		return "Deleted"
+
+	# Try to move to trash folder if one exists
+	if trash_folder is not None:
+		try:
+			resp_code, response = imap.copy(str(msg_num), trash_folder)
 			print("Response Code : {}".format(resp_code))
-			print("Response      : {}".format(response[0].decode()))
-			
-			delete_msg(imap, msg_num)
+			if response and response[0] is not None:
+				print("Response      : {}".format(response[0].decode()))
 
+			_delete_safe(imap, msg_num)
 			return "Trashed"
-	else:
-		return False
+		except Exception as e:
+			print("Copy to trash failed: {}".format(e))
+			_delete_safe(imap, msg_num)
+			return "Deleted"
+
+	# No trash folder found — fall back to permanent deletion
+	_delete_safe(imap, msg_num)
+	return "Deleted"
 
 def sort_folders(imap):
 	# List directories
