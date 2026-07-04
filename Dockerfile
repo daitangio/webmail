@@ -30,32 +30,17 @@ ENV PATH="/root/.local/bin:${PATH}"
 RUN pi --version
 
 
-
+# Ensure gh is installed (optioanl but can be userful)
+RUN (type -p wget >/dev/null || (apt update && apt install wget -y)) \
+	&& mkdir -p -m 755 /etc/apt/keyrings \
+	&& out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+	&& cat $out | tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
+	&& chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+	&& mkdir -p -m 755 /etc/apt/sources.list.d \
+	&& echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+	&& apt update \
+	&& apt install gh -y
 
 # RUN addgroup --gid 1000  app && adduser --uid 1000 --ingroup app  app
 # USER app
-
 # WORKDIR /home/app
-
-# COPY LICENSE .
-
-# COPY pyproject.toml .
-
-# # GG Codex suggestion to extract requirements to cache them before real install 
-# # You can comment this 2 lines if you want a more "standard" - unoptimized procedure
-# RUN python -c "import tomllib; p=tomllib.load(open('pyproject.toml','rb')); print('\n'.join(p['project']['dependencies']))" > requirements.txt
-# RUN pip install --user -r requirements.txt
-# # RUN ls /home/app/.cache/
-
-# 
-
-# COPY tests tests
-# COPY src src
-# COPY README.md .
-
-# RUN pip install -e .
-
-# RUN python3 -m unittest discover -s tests
-
-
-# TODO

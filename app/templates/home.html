@@ -9,9 +9,9 @@
 </div>
 
 <div class="container">
-	<div class="row justify-content-end">
-		<div class="col-xl-3">
-			<table class="table table-hover table-dark table-bordered table-condensed border-secondary sticky-lg-top" style="top: 20px">
+	<div class="row">
+		<div class="col-lg-4 col-xl-3">
+			<table class="table table-hover table-dark table-bordered table-condensed border-secondary sticky-lg-top" style="top: 20px; table-layout: fixed; width: 100%;">
 			<a id="new_msg" class="btn btn-primary badge rounded-pill bg-success" href="/home?folder={{request.args.get('folder')}}" role="button"></a>
 			<script>
 			var timeout = 10
@@ -44,14 +44,14 @@
 			</script>
 			  <thead>
 			    <tr>
-			      <th scope="col" title="Mailbox Folder">Folder</th>
-			      <th scope="col" title="Number of Emails">#</th>
+			      <th scope="col" title="Mailbox Folder" style="width: 85%">Folder</th>
+			      <th scope="col" title="Number of Emails" style="width: 15%">#</th>
 			    </tr>
 			  </thead>
 			{% for key, value in sorted_folders.items() %}
 			  <tbody>
 			    <tr>
-			      <td><a href="/home?folder={{key}}">{{key}}</a></td>
+			      <td class="text-truncate" style="max-width: 0;"><a href="/home?folder={{key}}" class="text-truncate d-inline-block" style="max-width: 100%; vertical-align: middle;">{{key}}</a></td>
 			      <td>{{value}}</td>
 			    </tr>
 			  </tbody>
@@ -70,7 +70,7 @@
 		{% elif num_body_lines > 25 %}
 			{% set ns.row_num = 25 %}
 		{% endif %}
-		<div class="col-xl-9 " style="height: 0%">
+		<div class="col-lg-8 col-xl-9" style="height: 0%">
 				<textarea class="bg-dark border border-secondary" style="width: 100%; height: 100%; color: white; padding: 5px" rows="{{ns.row_num}}" readonly>{{body}}</textarea>
 			<div class="bg-dark border border-secondary py-1 mt-2">
 				<div class="d-flex justify-content-center">
