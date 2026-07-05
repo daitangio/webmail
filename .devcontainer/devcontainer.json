@@ -11,7 +11,10 @@
 	"features": {
 		// "ghcr.io/devcontainers/features/python:1": {}
 		//,"ghcr.io/devcontainer-config/features/dot-config:4": {}
-	}
+	},
+
+	// See https://code.visualstudio.com/remote/advancedcontainers/environment-variables
+	"runArgs": ["--env-file",".devcontainer/devcontainer.env"]
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},

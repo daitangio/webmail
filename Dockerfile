@@ -33,9 +33,11 @@ ENV PI_CODING_AGENT_SESSION_DIR=/workspaces/webmail/var/pi-sessions/
 # Install crafted pi-extensions
 WORKDIR /workspaces/pi-extensions
 RUN npm install mitsupi
-RUN pi install node_modules/mitsupi
+RUN pi install /workspaces/pi-extensions/node_modules/mitsupi
 RUN pi list
 
+# Install claude code too
+RUN npm install -g @anthropic-ai/claude-code
 
 # Ensure gh is installed (optioanl but can be userful)
 # RUN (type -p wget >/dev/null || (apt update && apt install wget -y)) \

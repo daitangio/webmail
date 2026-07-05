@@ -18,4 +18,6 @@ var/pi-agent/bin/*
 var/pi-agent/settings.json
 var/pi-agent/models.json
 doc/*.html
+doc/*.txt
 node_modules
+CLAUDE.md
