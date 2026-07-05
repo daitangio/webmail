@@ -42,7 +42,7 @@ class TestWebPages(unittest.TestCase):
     def setUpClass(cls):
         cls.repo_root = str(Path(__file__).resolve().parents[1])
         cls.test_db_name = "test_database.db"
-        cls.test_db_path = os.path.join(cls.repo_root, "app", cls.test_db_name)
+        cls.test_db_path = os.path.join(cls.repo_root, "instance", cls.test_db_name)
 
         if os.path.exists(cls.test_db_path):
             os.remove(cls.test_db_path)
@@ -54,7 +54,9 @@ class TestWebPages(unittest.TestCase):
         with cls.app.app_context():
             db.create_all()
             user = User(email=cls.TEST_EMAIL)
-            user.password = generate_password_hash(cls.TEST_PASSWORD, method="sha256")
+            user.password = generate_password_hash(
+                cls.TEST_PASSWORD, method="pbkdf2:sha256"
+            )
             db.session.add(user)
             db.session.add(
                 Connection(

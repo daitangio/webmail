@@ -87,7 +87,10 @@ Long folder names are now truncated with ellipsis instead of overflowing the gri
 - [x] Fixed sidebar/content overlap in home.html
 - [x] Fixed missing `return redirect(full_url)` in error paths (trash, msg_move, status)
 - [x] Fixed message deletion: flexible trash folder detection, fallback to permanent delete, None-safe IMAP responses
-- [ ] Write and run tests
+- [x] Fixed test failures (6 tests passing):
+  - `app/__init__.py`: `db.create_all(app=app)` → `with app.app_context(): db.create_all()` (newer Flask-SQLAlchemy API)
+  - `tests/test_web_pages.py` + `app/auth.py`: `method="sha256"` → `method="pbkdf2:sha256"` (newer Werkzeug only supports scrypt/pbkdf2)
+  - `tests/test_web_pages.py` + `app/__init__.py`: DB path `app/` → `instance/` (Flask-SQLAlchemy 3.x resolves SQLite URIs to instance folder)
 - [ ] Fix known bugs (imap_port ignored, PASS refresh)
 - [ ] Rich message viewing (HTML, attachments)
 - [ ] Multi-user support

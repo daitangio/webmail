@@ -62,7 +62,8 @@ def setup():
         else:
             # Add the new_user to the database, then redirect home
             new_user = User(
-                email=email, password=generate_password_hash(password1, method="sha256")
+                email=email,
+                password=generate_password_hash(password1, method="pbkdf2:sha256"),
             )
             new_connection = Connection(
                 incoming_hostname=incoming_hostname,
